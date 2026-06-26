@@ -2,6 +2,8 @@ from ollama import chat
 from memory.memory_manager import MemoryManager
 from voice.speaker import speak
 from voice.listener import listen
+from tools.web_search import search_web
+from tools.query_classifier import needs_web_search
 
 # Turn this off when you don't need debugging information
 DEBUG = False
@@ -100,6 +102,22 @@ while True:
         print()
 
     memory_context = "\n".join(memories)
+    
+    # ---------------------------------
+    # Internet Search
+    # ---------------------------------
+
+    web_context = ""
+
+    if needs_web_search(user_input):
+
+        print("\nJarvis: Searching the internet...\n")
+
+    web_context = search_web(user_input)
+
+    if DEBUG:
+        print("WEB RESULTS:")
+        print(web_context)
 
     # -----------------------------
     # Update system prompt
@@ -168,7 +186,7 @@ honestly say that you do not remember.
             model="qwen3:8b",
             messages=messages,
             options={
-                "num_predict": 150,
+                "num_predict": 1024,
                 "temperature": 0.7
             }
         )
